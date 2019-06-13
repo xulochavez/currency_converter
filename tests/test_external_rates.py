@@ -21,7 +21,8 @@ def test_fetch_rates(mock_get, fxrates_service_response_json):
     mock_response.status_code = requests.codes.ok
     mock_response.json.return_value = fxrates_service_response_json
     mock_get.return_value = mock_response
-    timestamp, rates = fetch_rates()
+    base, rates, timestamp = fetch_rates()
+    assert base == 'USD'
     assert timestamp == datetime.datetime(2019, 6, 9, 12, 0, 8)
     assert isinstance(rates, dict)
     assert rates['AED'] == 3.673014

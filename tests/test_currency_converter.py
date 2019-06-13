@@ -1,8 +1,9 @@
 
 import datetime
 import pytest
+from unittest import mock
 
-from currency_converter.currency_converter import CcyConverter, DataStaleError
+from currency_converter.currency_converter import CcyConverter, DataStaleError, get_ccy_converter
 
 
 @pytest.fixture
@@ -38,7 +39,22 @@ def stale_ccy_converter():
 
 
 def test_stale_rates(stale_ccy_converter):
-    with pytest.raises(DataStaleError) as exc:
+    with pytest.raises(DataStaleError) as _exc:
         stale_ccy_converter.convert(10, 'EUR', 'GBP')
+
+
+@mock.patch('currency_converter.currency_converter.fetch_and_save_rates')
+@mock.patch('currency_converter.currency_converter.load_rates')
+def test_get_ccy_converter_fetches_new_rates_if_stale(mock_load_rates, mock_fetch_and_save_rates):
+    mock_load_rates.return_value = ('USD', {'EUR': 1}, datetime.datetime.now())
+    mock_fetch_and_save_rates.return_value = ('USD', {'EUR': 1.1}, datetime.datetime.now())
+    with mock.patch('currency_converter.currency_converter.CcyConverter.is_stale', return_value=True):
+        _ = get_ccy_converter()
+
+    assert mock_fetch_and_save_rates.call_count == 1
+
+
+
+
 
 

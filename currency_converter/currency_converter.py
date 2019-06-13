@@ -1,5 +1,8 @@
 import datetime
 
+from currency_converter.db import load_rates, save_rates
+from currency_converter.external_rates import fetch_rates
+
 
 class DataStaleError(Exception):
     pass
@@ -28,3 +31,23 @@ class CcyConverter:
     def is_stale(self):
         """True if rates timestamp is older than 24h"""
         return self.timestamp < datetime.datetime.now() - datetime.timedelta(1)
+
+
+def fetch_and_save_rates():
+    base, rates, timestamp = fetch_rates()
+    save_rates(base, rates, timestamp)
+    return base, rates, timestamp
+
+
+def get_ccy_converter():
+    base, rates, timestamp = load_rates()
+    if not all([base, rates, timestamp]):
+        base, rates, timestamp = fetch_and_save_rates()
+
+    ccy_converter = CcyConverter(base, rates, timestamp)
+
+    if ccy_converter.is_stale():
+        base, rates, timestamp = fetch_and_save_rates()
+        ccy_converter = CcyConverter(base, rates, timestamp)
+
+    return ccy_converter

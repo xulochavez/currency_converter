@@ -9,6 +9,8 @@ def fetch_rates():
 
     if r.status_code == requests.codes.ok:
         response_json = r.json()
-        return datetime.datetime.fromtimestamp(response_json['timestamp']), response_json['rates']
+        return response_json['base'], \
+               response_json['rates'], \
+               datetime.datetime.fromtimestamp(response_json['timestamp'])
     else:
         raise r.raise_for_status()

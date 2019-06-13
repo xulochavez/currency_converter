@@ -1,6 +1,6 @@
 from flask import Flask
 from currency_converter.config import Config
-from currency_converter import db
+from currency_converter import db, routes
 
 
 def create_app(test_config=None):
@@ -13,5 +13,8 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    app.register_blueprint(routes.bp)
+
     return app
+
 
