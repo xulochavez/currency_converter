@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, make_response, jsonify
 from currency_converter.config import Config
 from currency_converter import db, routes
 
@@ -14,6 +14,14 @@ def create_app(test_config=None):
     db.init_app(app)
 
     app.register_blueprint(routes.bp)
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return make_response(jsonify({'error': 'Internal Server error'}), 500)
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return make_response(jsonify({'error': 'Not found'}), 404)
 
     return app
 

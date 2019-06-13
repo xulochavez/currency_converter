@@ -1,6 +1,6 @@
 import datetime
 import requests
-
+from flask import abort
 
 def fetch_rates():
     API_KEY = "4d756169850241ad89c79291450af58f"
@@ -13,4 +13,5 @@ def fetch_rates():
                response_json['rates'], \
                datetime.datetime.fromtimestamp(response_json['timestamp'])
     else:
-        raise r.raise_for_status()
+        abort(500)
+        #raise r.raise_for_status()
