@@ -1,34 +1,33 @@
 import datetime
-import logging
-from flask import Flask
 import pytest
-from unittest import mock
-from flask_sqlalchemy import SQLAlchemy
 
-from currency_converter.db import save_rates
+from currency_converter import create_app
+from currency_converter.config import TestConfig
+from currency_converter.db import db, save_rates, FxRate
 
 
 @pytest.fixture
 def test_app():
-    app = Flask(__name__)
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/currency_convertor_test.db'
-    return app
+    app = create_app(test_config=TestConfig)
+    with app.app_context():
+        db.create_all()
 
-@pytest.fixture
-def test_db(test_app):
-    db = SQLAlchemy(test_app)
+        yield app
 
-    logging.info("creating db tables")
-    db.create_all()
-    yield db
-    #db.drop_all()
+        db.drop_all()
 
 
-def test_save_rates(test_db):
-    import currency_converter.db
-    with mock.patch.object(currency_converter.db, 'db', test_db):
-        save_rates(timestamp=datetime.datetime.now(), base_ccy='USD', rates={'BRL': 4.1})
+def test_save_rates(test_app):
+    with test_app.app_context():
+        download_timestamp = datetime.datetime.now()
+        save_rates(timestamp=download_timestamp, base_ccy='USD', rates={'BRL': 4.1})
+        actual = FxRate.query.all()
+        assert len(actual) == 1
+        assert actual[0].base == 'USD'
+        assert actual[0].quote == 'BRL'
+        assert actual[0].rate == 4.1
+        assert actual[0].download.timestamp == download_timestamp
+
 
 
 

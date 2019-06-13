@@ -17,7 +17,8 @@ def fxrates_service_response_json():
 @pytest.fixture()
 def ccy_converter():
     ccy_converter = CcyConverter(timestamp=datetime.datetime.now(),
-                                 usd_rates={'EUR': 0.8, 'GBP': 0.9})
+                                 base='USD',
+                                 rates={'EUR': 0.8, 'GBP': 0.9})
     return ccy_converter
 
 
@@ -30,8 +31,9 @@ def test_convert(ccy_converter):
 
 @pytest.fixture()
 def stale_ccy_converter():
-    stale_ccy_converter = CcyConverter(timestamp = datetime.datetime.now() - datetime.timedelta(2),
-                                 usd_rates = {'EUR': 0.8, 'GBP': 0.9})
+    stale_ccy_converter = CcyConverter(timestamp=datetime.datetime.now() - datetime.timedelta(2),
+                                       base='USD',
+                                       rates={'EUR': 0.8, 'GBP': 0.9})
     return stale_ccy_converter
 
 
